@@ -1,30 +1,56 @@
-<script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue'
+<script lang="ts" setup>
+import { computed, ref } from "vue";
+import TaskForm from "./components/TaskForm.vue";
+import { type Task } from "./types";
+import TaskList from "./components/TaskList.vue";
+
+const message = ref("Tasks App");
+const tasks = ref<Task[]>([]);
+
+const totalDone = computed(() =>
+  tasks.value.reduce((total, task) => (task.done ? total + 1 : total), 0)
+);
+
+function addTask(newTask: string) {
+  tasks.value.push({
+    id: crypto.randomUUID(),
+    title: newTask,
+    done: false,
+  });
+}
+
+function toggleDone(id: string) {
+  const task = tasks.value.find((task) => task.id === id);
+  if (task) {
+    task.done = !task.done;
+  }
+}
+
+function removeTask(id: string) {
+  const index = tasks.value.findIndex((task) => task.id === id);
+  if (index !== -1) {
+    tasks.value.splice(index, 1);
+  }
+}
 </script>
 
 <template>
-  <div>
-    <a href="https://vite.dev" target="_blank">
-      <img src="/vite.svg" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://vuejs.org/" target="_blank">
-      <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-    </a>
-  </div>
-  <HelloWorld msg="Vite + Vue" />
+  <main>
+    <h1>{{ message }}</h1>
+    <TaskForm @add-task="addTask" />
+    <h3 v-if="!tasks.length">Add a task to get started.</h3>
+    <h3 v-else>{{ totalDone }} / {{ tasks.length }} tasks completed.</h3>
+    <TaskList :tasks @toggle-done="toggleDone" @remove-task="removeTask" />
+  </main>
 </template>
 
-<style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
+<style>
+main {
+  max-width: 800px;
+  margin: 1rem auto;
 }
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
+.button-container {
+  display: flex;
+  justify-content: end;
 }
 </style>
